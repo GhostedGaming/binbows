@@ -2,9 +2,12 @@
 #![no_main]
 
 use core::arch::asm;
-
 use limine::BaseRevision;
 use limine::request::{FramebufferRequest, RequestsEndMarker, RequestsStartMarker};
+
+/// Everything that binbows has should go here
+use binbows_logging::serial_println;
+use binbows_gdt::gdt_init;
 
 /// Sets the base revision to the latest revision supported by the crate.
 /// See specification for further info.
@@ -18,10 +21,11 @@ static BASE_REVISION: BaseRevision = BaseRevision::new();
 #[unsafe(link_section = ".requests")]
 static FRAMEBUFFER_REQUEST: FramebufferRequest = FramebufferRequest::new();
 
-/// Define the stand and end markers for Limine requests.
+/// Define the start and end markers for Limine requests.
 #[used]
 #[unsafe(link_section = ".requests_start_marker")]
 static _START_MARKER: RequestsStartMarker = RequestsStartMarker::new();
+
 #[used]
 #[unsafe(link_section = ".requests_end_marker")]
 static _END_MARKER: RequestsEndMarker = RequestsEndMarker::new();
@@ -32,34 +36,55 @@ unsafe extern "C" fn kmain() -> ! {
     // removed by the linker.
     assert!(BASE_REVISION.is_supported());
 
-    if let Some(framebuffer_response) = FRAMEBUFFER_REQUEST.get_response() {
-        if let Some(framebuffer) = framebuffer_response.framebuffers().next() {
-            for i in 0..100_u64 {
-                // Calculate the pixel offset using the framebuffer information we obtained above.
-                // We skip `i` scanlines (pitch is provided in bytes) and add `i * 4` to skip `i` pixels forward.
-                let pixel_offset = i * framebuffer.pitch() + i * 4;
+    // Framebuffer code commented out for now
+    //if let Some(framebuffer_response) = FRAMEBUFFER_REQUEST.get_response() {
+    //    if let Some(framebuffer) = framebuffer_response.framebuffers().next() {
+    //        for i in 0..100_u64 {
+    //            // Calculate the pixel offset using the framebuffer information we obtained above.
+    //            // We skip `i` scanlines (pitch is provided in bytes) and add `i * 4` to skip `i` pixels forward.
+    //            let pixel_offset = i * framebuffer.pitch() + i * 4;
+    //
+    //            // Write 0xFFFFFFFF to the provided pixel offset to fill it white.
+    //            unsafe {
+    //                framebuffer
+    //                    .addr()
+    //                    .add(pixel_offset as usize)
+    //                    .cast::<u32>()
+    //                    .write(0xFFFFFFFF)
+    //            };
+    //        }
+    //    }
+    //}
 
-                // Write 0xFFFFFFFF to the provided pixel offset to fill it white.
-                unsafe {
-                    framebuffer
-                        .addr()
-                        .add(pixel_offset as usize)
-                        .cast::<u32>()
-                        .write(0xFFFFFFFF)
-                };
-            }
+    serial_println!("Binbows kernel starting...");
+    
+    serial_println!("Initializing GDT");
+    gdt_init();
+    
+    serial_println!("Kernel initialization complete!");
+    
+    // Main kernel loop
+    loop {
+        serial_println!("Kernel running...");
+        
+        // Sleep for a bit to avoid spamming
+        for _ in 0..1000000 {
+            core::hint::spin_loop();
         }
+        
+        // You can add kernel tasks here
+        hcf_once();
     }
-
-    hcf();
 }
 
 #[cfg(not(test))]
 #[panic_handler]
-fn rust_panic(_info: &core::panic::PanicInfo) -> ! {
+fn rust_panic(info: &core::panic::PanicInfo) -> ! {
+    serial_println!("KERNEL PANIC: {}", info);
     hcf();
 }
 
+// Halt and catch fire - infinite loop with halt
 fn hcf() -> ! {
     loop {
         unsafe {
@@ -70,5 +95,17 @@ fn hcf() -> ! {
             #[cfg(target_arch = "loongarch64")]
             asm!("idle 0");
         }
+    }
+}
+
+// Halt once (for use in loops where you want to yield CPU)
+fn hcf_once() {
+    unsafe {
+        #[cfg(target_arch = "x86_64")]
+        asm!("hlt");
+        #[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
+        asm!("wfi");
+        #[cfg(target_arch = "loongarch64")]
+        asm!("idle 0");
     }
 }

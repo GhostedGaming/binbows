@@ -1,0 +1,1 @@
+{"rustc":3285779074939226897,"features":"","declared_features":"","target":0,"profile":0,"path":0,"deps":[[2691255660658095298,"build_script_build",false,6920595815706911348]],"local":[{"RerunIfChanged":{"output":"debug/build/limine-rust-template-0a20849795f4aad7/output","paths":["linker-x86_64.ld"]}}],"rustflags":[],"config":0,"compile_kind":0}

@@ -1,0 +1,15 @@
+[workspace]
+members = [
+"kernel"
+, "binbows-interrupts"
+, "binbows-logging"
+, "binbows-gdt"]
+resolver = "2"
+
+[workspace.dependencies]
+binbows-interrupts = { path = "binbows-interrupts" }
+binbows-logging = { path = "binbows-logging" }
+binbows-gdt = { path = "binbows-gdt" }
+once_cell = { version = "1.19", default-features = false, features = ["critical-section"] }
+x86_64 = "0.15.2"
+lazy_static = { version = "1.5.0", features = ["spin_no_std"] }

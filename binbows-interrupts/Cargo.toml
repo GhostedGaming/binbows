@@ -1,0 +1,10 @@
+[package]
+name = "binbows-interrupts"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+x86_64 = { workspace = true }
+once_cell = { workspace = true }
+lazy_static = { workspace = true }
+binbows-logging = { workspace = true }

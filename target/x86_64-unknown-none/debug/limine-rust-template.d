@@ -1,0 +1,1 @@
+/home/gavin/binbows/target/x86_64-unknown-none/debug/limine-rust-template: /home/gavin/binbows/binbows-gdt/src/lib.rs /home/gavin/binbows/binbows-interrupts/src/lib.rs /home/gavin/binbows/binbows-logging/src/lib.rs /home/gavin/binbows/kernel/build.rs /home/gavin/binbows/kernel/linker-x86_64.ld /home/gavin/binbows/kernel/src/main.rs

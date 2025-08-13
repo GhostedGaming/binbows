@@ -1,2 +1,0 @@
-cargo:rustc-link-arg=-T/home/gavin/binbows/kernel/linker-x86_64.ld
-cargo:rerun-if-changed=linker-x86_64.ld
