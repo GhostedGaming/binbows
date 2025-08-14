@@ -2,6 +2,7 @@
 #![no_main]
 
 use core::arch::asm;
+use binbows_interrupts::idt_init;
 use limine::BaseRevision;
 use limine::request::{FramebufferRequest, RequestsEndMarker, RequestsStartMarker};
 
@@ -60,6 +61,9 @@ unsafe extern "C" fn kmain() -> ! {
     
     serial_println!("Initializing GDT");
     gdt_init();
+
+    serial_println!("Initializing IDT and CPU Exceptions");
+    idt_init();
     
     serial_println!("Kernel initialization complete!");
     
