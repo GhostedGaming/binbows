@@ -70,7 +70,7 @@ pub extern "x86-interrupt" fn general_protection_fault_handler(
 pub extern "x86-interrupt" fn double_fault_handler(
     stack_frame: InterruptStackFrame,
     _error_code: u64,
-) {
+) -> ! {
     serial_println!(
         "[SUGGESTION] Possible cause: Exception during exception handling. Solution: Check stack overflows and handler correctness.\r\n"
     );
@@ -258,7 +258,7 @@ pub extern "x86-interrupt" fn alignment_check_handler(
     }
 }
 
-pub extern "x86-interrupt" fn machine_check_handler(stack_frame: InterruptStackFrame) {
+pub extern "x86-interrupt" fn machine_check_handler(stack_frame: InterruptStackFrame) -> ! {
     serial_println!("[ERROR] Machine Check Exception: {:#?}\r\n", stack_frame);
     serial_println!(
         "[SUGGESTION] Possible cause: Hardware error. Solution: Check hardware status and logs.\r\n"
