@@ -1,6 +1,6 @@
 use core::arch::asm;
 
-use binbows_logging::serial_println;
+// use binbows_logging::serial_println; // Uncomment if you need debugging
 use x86_64::structures::idt::{ InterruptStackFrame, InterruptDescriptorTable };
 
 pub fn setup_hardware_interrupts(idt: &mut InterruptDescriptorTable) {

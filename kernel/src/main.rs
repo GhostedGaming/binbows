@@ -37,26 +37,6 @@ unsafe extern "C" fn kmain() -> ! {
     // removed by the linker.
     assert!(BASE_REVISION.is_supported());
 
-    // Framebuffer code commented out for now
-    //if let Some(framebuffer_response) = FRAMEBUFFER_REQUEST.get_response() {
-    //    if let Some(framebuffer) = framebuffer_response.framebuffers().next() {
-    //        for i in 0..100_u64 {
-    //            // Calculate the pixel offset using the framebuffer information we obtained above.
-    //            // We skip `i` scanlines (pitch is provided in bytes) and add `i * 4` to skip `i` pixels forward.
-    //            let pixel_offset = i * framebuffer.pitch() + i * 4;
-    //
-    //            // Write 0xFFFFFFFF to the provided pixel offset to fill it white.
-    //            unsafe {
-    //                framebuffer
-    //                    .addr()
-    //                    .add(pixel_offset as usize)
-    //                    .cast::<u32>()
-    //                    .write(0xFFFFFFFF)
-    //            };
-    //        }
-    //    }
-    //}
-
     serial_println!("Binbows kernel starting...");
     
     serial_println!("Initializing GDT");
@@ -66,19 +46,27 @@ unsafe extern "C" fn kmain() -> ! {
     idt_init();
     
     serial_println!("Kernel initialization complete!");
+
+    if let Some(framebuffer_response) = FRAMEBUFFER_REQUEST.get_response() {
+        if let Some(framebuffer) = framebuffer_response.framebuffers().next() {
+            for i in 0..100_u64 {
+                // Calculate the pixel offset using the framebuffer information we obtained above.
+                // We skip `i` scanlines (pitch is provided in bytes) and add `i * 4` to skip `i` pixels forward.
+                let pixel_offset = i * framebuffer.pitch() + i * 4;
     
-    // Main kernel loop
-    loop {
-        serial_println!("Kernel running...");
-        
-        // Sleep for a bit to avoid spamming
-        for _ in 0..1000000 {
-            core::hint::spin_loop();
+                // Write 0xFFFFFFFF to the provided pixel offset to fill it white.
+                unsafe {
+                    framebuffer
+                        .addr()
+                        .add(pixel_offset as usize)
+                        .cast::<u32>()
+                        .write(0xFFFFFFFF)
+                };
+            }
         }
-        
-        // You can add kernel tasks here
-        hcf_once();
     }
+
+    hcf();
 }
 
 #[cfg(not(test))]
@@ -99,17 +87,5 @@ fn hcf() -> ! {
             #[cfg(target_arch = "loongarch64")]
             asm!("idle 0");
         }
-    }
-}
-
-// Halt once (for use in loops where you want to yield CPU)
-fn hcf_once() {
-    unsafe {
-        #[cfg(target_arch = "x86_64")]
-        asm!("hlt");
-        #[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
-        asm!("wfi");
-        #[cfg(target_arch = "loongarch64")]
-        asm!("idle 0");
     }
 }
